@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <title>RegearRat</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #252525;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1, label, #result {
+            color: #4A6FA5;
+        }
+
+        form {
+            background-color: #1c1c1c;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            width: 300px;
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            border: 1px solid #4A6FA5;
+            border-radius: 4px;
+            font-size: 16px;
+            color: #4A6FA5;
+            background-color: #1c1c1c;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #252525;
+        }
+
+        #result {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            margin: 10px;
+        }
+
+        .item-row p {
+            margin: 0;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .item-row img {
+            max-width: 100px;
+            max-height: 100px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>RegearRat</h1>
+
+    <form id="fileForm">
+        <label for="file">Upload Loot Log:</label>
+        <input type="file" id="file" name="file" accept=".txt" required>
+
+        <label for="playerFilter">Username:</label>
+        <input type="text" id="playerFilter" name="playerFilter" required>
+
+        <button type="button" onclick="analyzeFile()">Check</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
