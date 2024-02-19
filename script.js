@@ -24,7 +24,7 @@ function analyzeFile() {
                 var lootEventSplit = lootEvent.split(";");
                 var lootedFrom = strip(lootEventSplit[9]);
 
-                if (lootedFrom.toLowerCase() === playerFilter.toLowerCase() || lootedFrom.toUpperCase() === playerFilter.toUpperCase()) {
+                if (lootedFrom === playerFilter) {
                     var playerName = lootEventSplit[3];
                     var itemName = lootEventSplit[4];
 
