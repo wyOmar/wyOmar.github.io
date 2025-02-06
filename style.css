@@ -206,3 +206,58 @@ img[alt="RegearRat Logo"] {
     max-width: 30%;
     margin-bottom: 20px;
 }
+
+/* Ensure the input wrapper behaves normally */
+.input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Make suggestions appear in normal document flow */
+/* Autocomplete Suggestions */
+#suggestions {
+    width: 100%;
+    background: #393e46;
+    border-radius: 6px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden; /* Prevents horizontal scrollbar */
+    z-index: 1000;
+    display: none;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Suggestion Items */
+.suggestion-item {
+    padding: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #eeeeee;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: #393e46;
+    transition: background 0.3s ease-in-out;
+    white-space: nowrap; /* Prevents text from wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Adds '...' if text is too long */
+}
+
+/* Fix hover behavior so it doesn't resize */
+.suggestion-item:hover {
+    background: #00adb5;
+    color: #222831;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+
+
+/* Make the list behave as a normal block object */
+#suggestions.show {
+    display: block;
+    opacity: 1;
+}

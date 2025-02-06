@@ -11,8 +11,8 @@
     <nav>
         <div class="nav-left">RegearRat</div>
         <ul class="nav-right">
-            <li><a href="../index.html">❓ Who Looted Me?</a></li>
-            <li><a href="../guildLoot/index.html">🤝 GuildLoot Return</a></li>
+            <li><a href="/">💰 Lost & Found</a></li>
+            <li><a href="../guildLoot/index.html">♻️ Guild Reclaim</a></li>
         </ul>
     </nav>
     <img src="rat.png" alt="RegearRat Logo" style="max-width: 30%;">
@@ -22,9 +22,12 @@
         <input type="file" id="file" name="file" accept=".txt" required>
 
         <label for="playerFilter">Username</label>
-        <input type="text" id="playerFilter" name="playerFilter" required>
+        
+        <div class="input-wrapper">
+            <input type="text" id="playerFilter" name="playerFilter" required>
+            <div id="suggestions"></div>
+        </div>
 
-        <button type="button" onclick="analyzeFile()">Check</button>
     </form>
 
     <div id="result"></div>
