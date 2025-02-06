@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" type="text/css" href="../style.css">
     <title>RegearRat</title>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav>
@@ -15,16 +15,18 @@
             <li><a href="../guildLoot/index.html">🤝 GuildLoot Return</a></li>
         </ul>
     </nav>
-    <img src="rat.png" alt="RegearRat Logo" style="max-width: 30%;">
+    <img src="../rat.png" alt="RegearRat Logo" class="logo">
 
     <form id="fileForm">
         <label for="file">Upload Loot Log</label>
-        <input type="file" id="file" name="file" accept=".txt" required>
+        <input type="file" id="file" name="file" accept=".txt" required onchange="extractGuilds()">
 
-        <label for="playerFilter">Username</label>
-        <input type="text" id="playerFilter" name="playerFilter" required>
+        <label for="guildSelect">Select Your Guild</label>
+        <select id="guildSelect" disabled>
+            <option value="">Upload a file first...</option>
+        </select>
 
-        <button type="button" onclick="analyzeFile()">Check</button>
+     
     </form>
 
     <div id="result"></div>
