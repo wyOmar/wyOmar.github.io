@@ -1,64 +1,107 @@
+document.addEventListener("DOMContentLoaded", function () {
+    var inputField = document.getElementById("playerFilter");
+    var form = document.getElementById("fileForm");
+
+    // Make "Enter" key trigger analyzeFile()
+    inputField.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            analyzeFile();
+        }
+    });
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        analyzeFile();
+    });
+});
+
 function analyzeFile() {
-    // Get values from the form
     var fileInput = document.getElementById("file");
     var playerFilter = document.getElementById("playerFilter").value;
+    var resultDiv = document.getElementById("result");
 
-    // Check if a file is selected
-    if (fileInput.files.length > 0) {
-        var file = fileInput.files[0];
+    if (!fileInput.files.length) {
+        alert("Please select a file.");
+        return;
+    }
 
-        // Read the contents of the file
-        var reader = new FileReader();
-        reader.onload = function (event) {
-            var fileContent = event.target.result;
+    var file = fileInput.files[0];
+    var reader = new FileReader();
 
-            var lootDict = {};
+    reader.onload = function (event) {
+        var fileContent = event.target.result;
+        var lootDict = {};
+        var lootLogLines = fileContent.split("\n");
 
-            var lootLogLines = fileContent.split("\n");
+        function preserveFormat(inputString) {
+            return inputString ? inputString.replace(/[^a-zA-Z0-9@_]/g, '') : ''; // Keep underscores
+        }
 
-            function strip(inputString) {
-                return inputString ? inputString.replace(/[^a-zA-Z0-9]/g, '') : '';
-            }
+        lootLogLines.forEach(function (lootEvent) {
+            var lootEventSplit = lootEvent.split(";");
+            var lootedFrom = preserveFormat(lootEventSplit[9]);
+            var itemID = preserveFormat(lootEventSplit[4]); // Keep original format
+            var itemName = lootEventSplit[5]; // Readable item name
 
-            lootLogLines.forEach(function (lootEvent) {
-                var lootEventSplit = lootEvent.split(";");
-                var lootedFrom = strip(lootEventSplit[9]);
+            if (lootedFrom.toLowerCase() === playerFilter.toLowerCase()) {
+                var playerName = lootEventSplit[3];
+                var guildName = lootEventSplit[2]; // Extract Guild Name
 
-                if (lootedFrom.toLowerCase() === playerFilter.toLowerCase() || lootedFrom.toUpperCase() === playerFilter.toUpperCase()) {
-                    var playerName = lootEventSplit[3];
-                    var itemName = lootEventSplit[4];
+                // **FILTER OUT TRASH ITEMS**
+                if (itemID.includes("TRASH")) return;
 
-                    if (!(playerName in lootDict)) {
-                        lootDict[playerName] = [];
-                    }
-
-                    lootDict[playerName].push(itemName);
+                if (!(playerName in lootDict)) {
+                    lootDict[playerName] = { guild: guildName, items: [] };
                 }
+
+                lootDict[playerName].items.push({ itemID, itemName }); // Store full ID & readable name
+            }
+        });
+
+        // Clear and display results
+        resultDiv.innerHTML = "";
+        Object.keys(lootDict).forEach(player => {
+            var playerLootSection = document.createElement("div");
+            playerLootSection.classList.add("loot-entry");
+
+            // Player Name & Guild Header
+            var playerInfo = document.createElement("p");
+            playerInfo.innerHTML = `<strong>${player}</strong> <span style="color:#00adb5;">(${lootDict[player].guild})</span>`;
+
+            playerLootSection.appendChild(playerInfo);
+
+            var itemContainer = document.createElement("div");
+            itemContainer.classList.add("item-container");
+
+            lootDict[player].items.forEach(item => {
+                var itemImg = document.createElement("img");
+                itemImg.src = `https://render.albiononline.com/v1/item/${item.itemID}.png?count=1&quality=1&size=217`;
+                itemImg.alt = item.itemName;
+                itemImg.style.margin = "5px";
+
+                var itemLink = document.createElement("a");
+                itemLink.href = `https://east.albiondb.net/player/${player}`;   
+                itemLink.target = "_blank";
+                itemLink.appendChild(itemImg);
+
+                itemContainer.appendChild(itemLink);
             });
 
-            // Display the result
-            var result = "";
+            playerLootSection.appendChild(itemContainer);
+            resultDiv.appendChild(playerLootSection);
+        });
 
-            for (var player in lootDict) {
-                if (lootDict.hasOwnProperty(player)) {
-                    result += "<strong>" + player + ":</strong> ";
-                    lootDict[player].forEach(function (itemName) {
-                        // Wrap each image in an anchor tag with the specified link
-                        result += '<a href="https://east.albiondb.net/player/' + player + '" target="_blank">'
-                        result += '<img src="https://render.albiononline.com/v1/item/' + itemName + '.png?count=1&quality=1&size=100" alt="' + itemName + '">';
-                        result += '</a>';
-                    });
-                    result += "<br><br>"; // Add an extra line break after each player's loot information
-                }
-            }
+        if (Object.keys(lootDict).length === 0) {
+            resultDiv.innerHTML = "<p style='color:#FF5252; font-size:18px;'>No matching loot found.</p>";
+        }
 
-            document.getElementById("result").innerHTML = result;
-        };
+        // Scroll to results
+        resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
 
-        // Read the file as text
-        reader.readAsText(file);
-    } else {
-        // No file selected
-        alert("Please select a file.");
-    }
+    // Show loading indicator while processing
+    resultDiv.innerHTML = "<p style='color:#00adb5; font-size:18px;'>Processing loot log...</p>";
+
+    reader.readAsText(file);
 }
