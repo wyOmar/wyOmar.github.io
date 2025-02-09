@@ -23,8 +23,11 @@ function extractGuilds() {
         const guilds = new Set();
         const lootLogLines = fileContent.split("\n");
 
+        // Detect delimiter (comma or semicolon)
+        const delimiter = detectDelimiter(lootLogLines[0]);
+
         lootLogLines.forEach((line, index) => {
-            const parts = line.split(";");
+            const parts = line.split(delimiter);
             if (parts.length >= 9) {
                 if (index === 0) return; // Skip CSV headers
 
@@ -86,12 +89,15 @@ function processLootData(fileContent, guildFilter) {
     const lootEvents = [];
     const lootLogLines = fileContent.split("\n");
 
+    // Detect delimiter (comma or semicolon)
+    const delimiter = detectDelimiter(lootLogLines[0]);
+
     function strip(inputString) {
         return inputString ? inputString.toLowerCase().replace(/\s/g, '') : '';
     }
 
     for (const lootEvent of lootLogLines) {
-        const lootEventSplit = lootEvent.split(";");
+        const lootEventSplit = lootEvent.split(delimiter);
         if (lootEventSplit.length < 10) continue; // Ensures valid format
 
         const lootedByGuild = strip(lootEventSplit[2]);
@@ -148,4 +154,15 @@ function displayResult(lootEvents) {
     });
 
     resultDiv.appendChild(lootContainer);
+}
+
+// Helper function to detect delimiter
+function detectDelimiter(line) {
+    if (line.includes(",")) {
+        return ","; // Comma-delimited
+    } else if (line.includes(";")) {
+        return ";"; // Semicolon-delimited
+    } else {
+        throw new Error("Unknown delimiter. File must be comma- or semicolon-delimited.");
+    }
 }
