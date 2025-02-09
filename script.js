@@ -65,11 +65,20 @@ document.addEventListener("DOMContentLoaded", function () {
             var fileContent = event.target.result;
             var lootLogLines = fileContent.split("\n");
     
+            // Detect delimiter (comma or semicolon)
+            var delimiter = detectDelimiter(lootLogLines[0]);
+    
             // **Skip the first line (headers)**
             lootLogLines.slice(1).forEach(function (lootEvent) {
-                var lootEventSplit = lootEvent.split(";");
-                if (lootEventSplit.length > 3) {
-                    playerNames.add(lootEventSplit[3]); // Extract looted_by_name
+                // Skip blank lines or lines with insufficient data
+                if (!lootEvent.trim()) return;
+    
+                var lootEventSplit = lootEvent.split(delimiter);
+                if (lootEventSplit.length > 9) {
+                    var playerName = lootEventSplit[9].trim(); // Extract looted_by_name
+                    if (playerName) {
+                        playerNames.add(playerName);
+                    }
                 }
             });
         };
@@ -77,91 +86,109 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsText(fileInput.files[0]);
     }
     
-
     function analyzeFile() {
         var playerFilter = inputField.value.trim();
         var resultDiv = document.getElementById("result");
         // Hide suggestions whenever analyzeFile() is triggered
         suggestionsDiv.innerHTML = "";
         suggestionsDiv.classList.remove("show");
-        
+    
         if (!fileInput.files.length || !playerFilter) {
             alert("Please select a file and enter a username.");
             return;
         }
-        
+    
         var file = fileInput.files[0];
         var reader = new FileReader();
-        
+    
         reader.onload = function (event) {
             var fileContent = event.target.result;
             var lootDict = {};
             var lootLogLines = fileContent.split("\n");
-
+    
+            // Detect delimiter (comma or semicolon)
+            var delimiter = detectDelimiter(lootLogLines[0]);
+    
             lootLogLines.forEach(function (lootEvent) {
-                var lootEventSplit = lootEvent.split(";");
+                // Skip blank lines or lines with insufficient data
+                if (!lootEvent.trim()) return;
+    
+                var lootEventSplit = lootEvent.split(delimiter);
                 if (lootEventSplit.length < 10) return;
-                
-                var lootedFrom = lootEventSplit[9];
-                var itemID = lootEventSplit[4];
-                var itemName = lootEventSplit[5];
-                
+    
+                var lootedFrom = lootEventSplit[9].trim();
+                var itemID = lootEventSplit[4].trim();
+                var itemName = lootEventSplit[5].trim();
+    
                 if (lootedFrom.toLowerCase() === playerFilter.toLowerCase()) {
-                    var playerName = lootEventSplit[3];
-                    var guildName = lootEventSplit[2];
-                    
+                    var playerName = lootEventSplit[3].trim();
+                    var guildName = lootEventSplit[2].trim();
+    
                     if (itemID.includes("TRASH")) return; // Filter trash items
-                    
+    
                     if (!(playerName in lootDict)) {
                         lootDict[playerName] = { guild: guildName, items: [] };
                     }
-                    
+    
                     lootDict[playerName].items.push({ itemID, itemName });
                 }
             });
-            
+    
             // Display results
             resultDiv.innerHTML = "";
             Object.keys(lootDict).forEach(player => {
                 var playerLootSection = document.createElement("div");
                 playerLootSection.classList.add("loot-entry");
-                
+    
                 var playerInfo = document.createElement("p");
                 playerInfo.innerHTML = `<strong>${player}</strong> <span style="color:#00adb5;">(${lootDict[player].guild})</span>`;
-                
+    
                 playerLootSection.appendChild(playerInfo);
-                
+    
                 var itemContainer = document.createElement("div");
                 itemContainer.classList.add("item-container");
-                
+    
                 lootDict[player].items.forEach(item => {
                     var itemImg = document.createElement("img");
                     itemImg.src = `https://render.albiononline.com/v1/item/${item.itemID}.png?count=1&quality=1&size=217`;
                     itemImg.alt = item.itemName;
                     itemImg.style.margin = "5px";
-                    
+    
                     var itemLink = document.createElement("a");
                     itemLink.href = `https://east.albiondb.net/player/${player}`;
                     itemLink.target = "_blank";
                     itemLink.appendChild(itemImg);
-                    
+    
                     itemContainer.appendChild(itemLink);
                 });
-                
+    
                 playerLootSection.appendChild(itemContainer);
                 resultDiv.appendChild(playerLootSection);
             });
-            
+    
             if (Object.keys(lootDict).length === 0) {
                 resultDiv.innerHTML = "<p style='color:#FF5252; font-size:18px;'>No matching loot found.</p>";
             }
-            
+    
             resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
         };
-        
+    
         resultDiv.innerHTML = "<p style='color:#00adb5; font-size:18px;'>Processing loot log...</p>";
         reader.readAsText(file);
     }
+    
+    // Helper function to detect delimiter
+    function detectDelimiter(line) {
+        if (line.includes(",")) {
+            return ","; // Comma-delimited
+        } else if (line.includes(";")) {
+            return ";"; // Semicolon-delimited
+        } else {
+            throw new Error("Unknown delimiter. File must be comma- or semicolon-delimited.");
+        }
+    }
+    
+    
 });
 
 

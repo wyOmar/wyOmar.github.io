@@ -152,7 +152,6 @@ button:hover {
     text-align: center;
     width: 200px;
 }
-
 .loot-entry {
     background: #393e46;
     padding: 15px;
@@ -180,6 +179,7 @@ button:hover {
     max-height: 100px;
     margin: 5px;
 }
+
 
 /* Loot Info */
 .loot-info {
