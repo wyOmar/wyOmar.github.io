@@ -68,6 +68,38 @@ nav {
     color: #00fff5;
 }
 
+/* Interactive Eyes Styling */
+.rat-eyes-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Distance between the eyes */
+    margin-bottom: 20px;
+    margin-top: 20px;
+}
+
+.eye {
+    width: 90px;  /* Increased size */
+    height: 90px; /* Increased size */
+    background-color: #eeeeee;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5), 0 4px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.pupil {
+    width: 35px;  /* Increased size */
+    height: 35px; /* Increased size */
+    background-color: #222831;
+    border-radius: 50%;
+    position: absolute;
+    box-shadow: inset -2px -2px 5px rgba(255, 255, 255, 0.2); /* Small highlight */
+    transition: transform 0.05s linear; /* Smooth micro-movements */
+}
+
 /* Form Styling */
 form {
     background-color: #393e46;
@@ -97,7 +129,6 @@ input, select {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-/* Ensure the guild dropdown matches the file upload width */
 #guildSelect {
     width: 100%;
 }
@@ -125,13 +156,44 @@ button:hover {
     transform: scale(1.05);
 }
 
-/* Result Display */
+/* Result Display Container */
 #result {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    gap: 30px;
+    width: 90%;
+    max-width: 1400px;
     margin-top: 20px;
     padding-bottom: 50px;
+}
+
+/* Guild Grouping Containers */
+.guild-section {
+    width: 100%;
+    background-color: #292f38;
+    padding: 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.guild-header {
+    color: #00adb5;
+    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #393e46;
+    padding-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Grid Layout for Cards within a Guild */
+.guild-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    width: 100%;
 }
 
 /* Loot Display */
@@ -152,20 +214,22 @@ button:hover {
     text-align: center;
     width: 200px;
 }
+
 .loot-entry {
     background: #393e46;
     padding: 15px;
-    margin: 10px;
     border-radius: 8px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     text-align: center;
-    width: 60%;
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .loot-entry p {
     font-size: 18px;
     font-weight: bold;
     margin-bottom: 10px;
+    margin-top: 5px;
 }
 
 .item-container {
@@ -179,7 +243,6 @@ button:hover {
     max-height: 100px;
     margin: 5px;
 }
-
 
 /* Loot Info */
 .loot-info {
@@ -202,11 +265,6 @@ button:hover {
     color: #00adb5;
 }
 
-img[alt="RegearRat Logo"] {
-    max-width: 30%;
-    margin-bottom: 20px;
-}
-
 /* Ensure the input wrapper behaves normally */
 .input-wrapper {
     position: relative;
@@ -215,7 +273,6 @@ img[alt="RegearRat Logo"] {
     flex-direction: column;
 }
 
-/* Make suggestions appear in normal document flow */
 /* Autocomplete Suggestions */
 #suggestions {
     width: 100%;
@@ -224,7 +281,7 @@ img[alt="RegearRat Logo"] {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     max-height: 200px;
     overflow-y: auto;
-    overflow-x: hidden; /* Prevents horizontal scrollbar */
+    overflow-x: hidden;
     z-index: 1000;
     display: none;
     transition: opacity 0.2s ease-in-out;
@@ -239,12 +296,11 @@ img[alt="RegearRat Logo"] {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     background: #393e46;
     transition: background 0.3s ease-in-out;
-    white-space: nowrap; /* Prevents text from wrapping */
+    white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis; /* Adds '...' if text is too long */
+    text-overflow: ellipsis;
 }
 
-/* Fix hover behavior so it doesn't resize */
 .suggestion-item:hover {
     background: #00adb5;
     color: #222831;
@@ -254,9 +310,6 @@ img[alt="RegearRat Logo"] {
     border-bottom: none;
 }
 
-
-
-/* Make the list behave as a normal block object */
 #suggestions.show {
     display: block;
     opacity: 1;

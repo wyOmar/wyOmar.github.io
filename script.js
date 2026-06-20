@@ -8,6 +8,33 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var playerNames = new Set(); // Store unique usernames
 
+    // --- Interactive Eyes Logic ---
+    document.addEventListener("mousemove", function(e) {
+        const eyes = document.querySelectorAll('.eye');
+        eyes.forEach(eye => {
+            const rect = eye.getBoundingClientRect();
+            const pupil = eye.querySelector('.pupil');
+            
+            // Calculate center of the eyeball
+            const eyeX = rect.left + rect.width / 2;
+            const eyeY = rect.top + rect.height / 2;
+
+            // Calculate angle from the eye to the cursor
+            const angle = Math.atan2(e.clientY - eyeY, e.clientX - eyeX);
+
+            // Calculate distance to move the pupil, constrained by the eye's radius
+            const dist = Math.hypot(e.clientX - eyeX, e.clientY - eyeY);
+            const maxRadius = (rect.width / 2) - (pupil.offsetWidth / 2) - 4; // 4px padding so it doesn't clip
+            const distanceToMove = Math.min(dist, maxRadius);
+
+            // Apply translation
+            const moveX = Math.cos(angle) * distanceToMove;
+            const moveY = Math.sin(angle) * distanceToMove;
+
+            pupil.style.transform = `translate(${moveX}px, ${moveY}px)`;
+        });
+    });
+
     // Event listener for file upload
     fileInput.addEventListener("change", function () {
         playerNames.clear();
@@ -47,8 +74,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
         suggestionsDiv.classList.add("show");
     });
-    
-    
 
     // Prevent default form submission
     form.addEventListener("submit", function (event) {
@@ -68,9 +93,8 @@ document.addEventListener("DOMContentLoaded", function () {
             // Detect delimiter (comma or semicolon)
             var delimiter = detectDelimiter(lootLogLines[0]);
     
-            // **Skip the first line (headers)**
+            // Skip the first line (headers)
             lootLogLines.slice(1).forEach(function (lootEvent) {
-                // Skip blank lines or lines with insufficient data
                 if (!lootEvent.trim()) return;
     
                 var lootEventSplit = lootEvent.split(delimiter);
@@ -103,14 +127,13 @@ document.addEventListener("DOMContentLoaded", function () {
     
         reader.onload = function (event) {
             var fileContent = event.target.result;
-            var lootDict = {};
+            var guildDict = {}; // Structure: { GuildName: { PlayerName: [items] } }
             var lootLogLines = fileContent.split("\n");
     
             // Detect delimiter (comma or semicolon)
             var delimiter = detectDelimiter(lootLogLines[0]);
     
             lootLogLines.forEach(function (lootEvent) {
-                // Skip blank lines or lines with insufficient data
                 if (!lootEvent.trim()) return;
     
                 var lootEventSplit = lootEvent.split(delimiter);
@@ -122,73 +145,111 @@ document.addEventListener("DOMContentLoaded", function () {
     
                 if (lootedFrom.toLowerCase() === playerFilter.toLowerCase()) {
                     var playerName = lootEventSplit[3].trim();
-                    var guildName = lootEventSplit[2].trim();
+                    var guildName = lootEventSplit[2].trim() || "No Guild";
     
                     if (itemID.includes("TRASH")) return; // Filter trash items
     
-                    if (!(playerName in lootDict)) {
-                        lootDict[playerName] = { guild: guildName, items: [] };
+                    // Initialize Guild grouping
+                    if (!(guildName in guildDict)) {
+                        guildDict[guildName] = {};
+                    }
+                    // Initialize Player grouping inside Guild
+                    if (!(playerName in guildDict[guildName])) {
+                        guildDict[guildName][playerName] = [];
                     }
     
-                    lootDict[playerName].items.push({ itemID, itemName });
+                    guildDict[guildName][playerName].push({ itemID, itemName });
                 }
             });
     
             // Display results
             resultDiv.innerHTML = "";
-            Object.keys(lootDict).forEach(player => {
-                var playerLootSection = document.createElement("div");
-                playerLootSection.classList.add("loot-entry");
+            
+            // Sort Guilds by total items looted (Highest to Lowest)
+            var sortedGuilds = Object.keys(guildDict).sort(function(a, b) {
+                var totalItemsA = 0;
+                for (var playerA in guildDict[a]) {
+                    totalItemsA += guildDict[a][playerA].length;
+                }
+                
+                var totalItemsB = 0;
+                for (var playerB in guildDict[b]) {
+                    totalItemsB += guildDict[b][playerB].length;
+                }
+                
+                return totalItemsB - totalItemsA;
+            });
+
+            sortedGuilds.forEach(guild => {
+                // Create a distinct section container for each Guild
+                var guildSection = document.createElement("div");
+                guildSection.classList.add("guild-section");
+
+                var guildHeader = document.createElement("h2");
+                guildHeader.classList.add("guild-header");
+                guildHeader.textContent = guild;
+                guildSection.appendChild(guildHeader);
+
+                // Grid wrapper for the cards inside this specific guild
+                var guildGrid = document.createElement("div");
+                guildGrid.classList.add("guild-grid");
     
-                var playerInfo = document.createElement("p");
-                playerInfo.innerHTML = `<strong>${player}</strong> <span style="color:#00adb5;">(${lootDict[player].guild})</span>`;
-    
-                playerLootSection.appendChild(playerInfo);
-    
-                var itemContainer = document.createElement("div");
-                itemContainer.classList.add("item-container");
-    
-                lootDict[player].items.forEach(item => {
-                    var itemImg = document.createElement("img");
-                    itemImg.src = `https://render.albiononline.com/v1/item/${item.itemID}.png?count=1&quality=1&size=217`;
-                    itemImg.alt = item.itemName;
-                    itemImg.style.margin = "5px";
-    
-                    var itemLink = document.createElement("a");
-                    itemLink.href = `https://east.albiondb.net/player/${player}`;
-                    itemLink.target = "_blank";
-                    itemLink.appendChild(itemImg);
-    
-                    itemContainer.appendChild(itemLink);
+                // Sort players within this guild by item count (highest to lowest)
+                var sortedPlayers = Object.keys(guildDict[guild]).sort(function(a, b) {
+                    return guildDict[guild][b].length - guildDict[guild][a].length;
                 });
-    
-                playerLootSection.appendChild(itemContainer);
-                resultDiv.appendChild(playerLootSection);
+
+                sortedPlayers.forEach(player => {
+                    var playerLootSection = document.createElement("div");
+                    playerLootSection.classList.add("loot-entry");
+        
+                    var playerInfo = document.createElement("p");
+                    playerInfo.innerHTML = `<strong>${player}</strong>`;
+                    playerLootSection.appendChild(playerInfo);
+        
+                    var itemContainer = document.createElement("div");
+                    itemContainer.classList.add("item-container");
+        
+                    guildDict[guild][player].forEach(item => {
+                        var itemImg = document.createElement("img");
+                        itemImg.src = `https://render.albiononline.com/v1/item/${item.itemID}.png?count=1&quality=1&size=217`;
+                        itemImg.alt = item.itemName;
+        
+                        var itemLink = document.createElement("a");
+                        itemLink.href = `https://east.albiondb.net/player/${player}`;
+                        itemLink.target = "_blank";
+                        itemLink.appendChild(itemImg);
+        
+                        itemContainer.appendChild(itemLink);
+                    });
+        
+                    playerLootSection.appendChild(itemContainer);
+                    guildGrid.appendChild(playerLootSection);
+                });
+
+                guildSection.appendChild(guildGrid);
+                resultDiv.appendChild(guildSection);
             });
     
-            if (Object.keys(lootDict).length === 0) {
-                resultDiv.innerHTML = "<p style='color:#FF5252; font-size:18px;'>No matching loot found.</p>";
+            if (Object.keys(guildDict).length === 0) {
+                resultDiv.innerHTML = "<p style='color:#FF5252; font-size:18px; text-align:center; width:100%;'>No matching loot found.</p>";
             }
     
             resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
         };
     
-        resultDiv.innerHTML = "<p style='color:#00adb5; font-size:18px;'>Processing loot log...</p>";
+        resultDiv.innerHTML = "<p style='color:#00adb5; font-size:18px; text-align:center; width:100%;'>Processing loot log...</p>";
         reader.readAsText(file);
     }
     
     // Helper function to detect delimiter
     function detectDelimiter(line) {
         if (line.includes(",")) {
-            return ","; // Comma-delimited
+            return ","; 
         } else if (line.includes(";")) {
-            return ";"; // Semicolon-delimited
+            return ";"; 
         } else {
             throw new Error("Unknown delimiter. File must be comma- or semicolon-delimited.");
         }
     }
-    
-    
 });
-
-
